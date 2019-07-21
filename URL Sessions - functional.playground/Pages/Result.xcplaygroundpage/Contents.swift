@@ -1,38 +1,6 @@
 import Foundation
 import PlaygroundSupport
 
-public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @escaping ResultCompletion<T.Response>) -> URLSessionDataTask {
-    let task = URLSession.shared.dataTask(with: r.request) { (data: Data?, response: URLResponse?, error: Error?) in
-        guard let data = data else {
-            return
-        }
-        
-        print("Attempt\(retry ?? 0)")
-        
-        if let statusCode = HTTPStatusCodes.decode(from: response) {
-            dump(statusCode)
-            switch statusCode {
-            case .Unauthorized, .Ok:
-                if let retry = retry, retry > 0 {
-                    //perform(request: r, retry: retry - 1, completion: completion)
-                    
-                    return
-                }
-                return
-            default:
-                break
-            }
-        }
-        
-        //dump(String.init(data: data, encoding: .utf8))
-        
-        completion(decode(request: r, data: data))
-    }
-    
-    task.resume()
-    
-    return task
-}
 
 public struct WikiRequest: APIRequest {
     public typealias Response = WikiList
@@ -40,7 +8,7 @@ public struct WikiRequest: APIRequest {
     public var resourceName: String = "/Wikis/List?expand=1"
     
     public var request: URLRequest {
-        return URLRequest(url: URL(string: "https://community.fandom.com/api/v1/\(resourceName)")!)
+        return URLRequest(url: URL(string: "https://community.fandom.com/api/v1\(resourceName)")!)
     }
 }
 
@@ -54,6 +22,37 @@ let task = perform(request: WikiRequest(), retry: 3) { result in
         dump(content.items.first!)
     }
 }
+
+
+//let task00 = performCurrying()(WikiRequest())
+
+//performCurrying()(WikiRequest {
+//    ";kasdasd"
+//    }())
+
+//performCurrying(retry: nil)
+
+
+let wiki = performCurrying(request: WikiRequest())(3)
+
+switch wiki {
+case let .failure(error):
+    dump(error)
+case let .success(context):
+    dump(context)
+}
+
+func add(a: Int) -> (Int) -> Int {
+    return { b in
+        a + b
+    }
+}
+
+1 |> add(a: 3)
+
+
+[0, 1, 2, 3].map { $0 |> add(a: 1) >>> add(a: 1) }
+
 
 PlaygroundPage.current.needsIndefiniteExecution = true
 
