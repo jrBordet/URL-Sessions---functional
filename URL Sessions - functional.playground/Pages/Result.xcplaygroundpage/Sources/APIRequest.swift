@@ -67,3 +67,38 @@ public func performCurrying<T: APIRequest>(completion: @escaping ResultCompletio
         task.resume()
     }
 }
+
+public typealias RequestCompletion<T> = (T) -> Void
+public typealias Request<T, U> = (T, @escaping RequestCompletion<U>) -> Void
+
+public func performAPI<T: APIRequest>(request r: T, completion: @escaping ResultCompletion<T.Response>){
+    let task = URLSession.shared.dataTask(with: r.request) { (data: Data?, response: URLResponse?, error: Error?) in
+        print(r.request.debugDescription)
+        
+        guard let data = data else {
+            fatalError(error?.localizedDescription ?? "")
+        }
+        
+        completion(decode(request: r, data: data))
+    }
+    
+    task.resume()
+}
+
+
+//public func fetchCustomer(using customerId: Wiki, completion: @escaping RequestCompletion<Result<Wiki>>) {
+//    request {
+//        print("Name request:")
+//
+//        let shouldFail = false
+//
+//        switch shouldFail {
+//        case false:
+//            var customer = Wiki(name: "", wordmark: "", desc: "")
+//            completion(.success(customer))
+//        case true:
+//            let err = NSError(domain: "com.bonzy", code: 1, userInfo: nil)
+//            completion(.failure(err))
+//        }
+//    }
+//}
