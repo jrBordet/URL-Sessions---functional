@@ -19,16 +19,11 @@ public func decode<T: APIRequest>(request r: T, data: Data) -> Result<T.Response
     }
 }
 
-/// public typealias ResultCompletion<Value> = (Result<Value>) -> Void
-
 public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @escaping ResultCompletion<T.Response>) -> URLSessionDataTask {
     let task = URLSession.shared.dataTask(with: r.request) { (data: Data?, response: URLResponse?, error: Error?) in
         guard let data = data else {
             return
         }
-        
-        print("Attempt \(retry ?? 0)")
-        print(r.request.debugDescription)
         
         if let statusCode = HTTPStatusCodes.decode(from: response) {
             dump(statusCode)
@@ -45,8 +40,6 @@ public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @e
             }
         }
         
-        //dump(String.init(data: data, encoding: .utf8))
-        
         completion(decode(request: r, data: data))
     }
     
@@ -59,10 +52,18 @@ public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @e
 // public typealias ResultCompletion<Value> = (Result<Value>) -> Void
 
 // public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @escaping ResultCompletion<T.Response>) -> URLSessionDataTask {
-public func performCurrying<T: APIRequest>(retry: Int) -> (T) -> Result<Wiki> {
-    return { (request: T) in
-        return Result.success(Wiki(name: "",
-                                   wordmark: "",
-                                   desc: ""))
+public func performCurrying<T: APIRequest>(completion: @escaping ResultCompletion<T.Response>) -> (T) -> Void {
+    return { r in
+        let task = URLSession.shared.dataTask(with: r.request) { (data: Data?, response: URLResponse?, error: Error?) in
+            print(r.request.debugDescription)
+            
+            guard let data = data else {
+                fatalError(error?.localizedDescription ?? "")
+            }
+            
+            completion(decode(request: r, data: data))
+        }
+        
+        task.resume()
     }
 }

@@ -23,14 +23,36 @@ let task = perform(request: WikiRequest(), retry: 3) { result in
     }
 }
 
-let wiki = WikiRequest() |> performCurrying(retry: 3)
+//let wiki = WikiRequest() |> performCurrying(retry: 3)
 
-switch wiki {
-case let .failure(error):
-    dump(error)
-case let .success(context):
-    dump(context)
+//
+//switch wiki {
+//case let .failure(error):
+//    dump(error)
+//case let .success(context):
+//    dump(context)
+//}
+
+WikiRequest() |> performCurrying { result in
+    print("currying")
+    switch result {
+    case let .failure(e):
+        print("❌ Error")
+        dump(e)
+    case let .success(content):
+        dump(content.items.first!)
+    }
 }
+
+performCurrying { r in
+    switch r {
+    case let .failure(e):
+        print("❌ Error")
+        dump(e)
+    case let .success(content):
+        dump(content.items.first!)
+    }
+}(WikiRequest())
 
 func add(a: Int) -> (Int) -> Int {
     return { b in
