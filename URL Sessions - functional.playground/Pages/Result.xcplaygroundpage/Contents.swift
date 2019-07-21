@@ -23,17 +23,7 @@ let task = perform(request: WikiRequest(), retry: 3) { result in
     }
 }
 
-
-//let task00 = performCurrying()(WikiRequest())
-
-//performCurrying()(WikiRequest {
-//    ";kasdasd"
-//    }())
-
-//performCurrying(retry: nil)
-
-
-let wiki = performCurrying(request: WikiRequest())(3)
+let wiki = WikiRequest() |> performCurrying(retry: 3)
 
 switch wiki {
 case let .failure(error):

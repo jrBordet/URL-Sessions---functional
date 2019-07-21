@@ -19,6 +19,8 @@ public func decode<T: APIRequest>(request r: T, data: Data) -> Result<T.Response
     }
 }
 
+/// public typealias ResultCompletion<Value> = (Result<Value>) -> Void
+
 public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @escaping ResultCompletion<T.Response>) -> URLSessionDataTask {
     let task = URLSession.shared.dataTask(with: r.request) { (data: Data?, response: URLResponse?, error: Error?) in
         guard let data = data else {
@@ -57,21 +59,10 @@ public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @e
 // public typealias ResultCompletion<Value> = (Result<Value>) -> Void
 
 // public func perform<T: APIRequest>(request r: T, retry: Int? = 0, completion: @escaping ResultCompletion<T.Response>) -> URLSessionDataTask {
-
-
-public func performCurrying<T: APIRequest>(request r: T) -> (Int) -> Result<Wiki> {
-    return { (retry: Int) in
+public func performCurrying<T: APIRequest>(retry: Int) -> (T) -> Result<Wiki> {
+    return { (request: T) in
         return Result.success(Wiki(name: "",
                                    wordmark: "",
                                    desc: ""))
     }
 }
-
-
-/*
- func add(a: Int) -> (Int) -> Int {
-     return { b in
-     a + b
-     }
- }
- */
