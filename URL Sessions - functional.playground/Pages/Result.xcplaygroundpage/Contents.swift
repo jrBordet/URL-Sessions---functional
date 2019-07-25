@@ -12,8 +12,17 @@ public struct WikiRequest: APIRequest {
     }
 }
 
-
 let task = perform(request: WikiRequest(), retry: 3) { result in
+    switch result {
+    case let .failure(e):
+        print("❌ Error")
+        dump(e)
+    case let .success(content):
+        dump(content.items.first!)
+    }
+}
+
+performAPI(request: WikiRequest()) { result in
     switch result {
     case let .failure(e):
         print("❌ Error")
